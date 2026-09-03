@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from '../db.js';
+import { generateInvoicePDF } from '../generateInvoicePDF.js';
 
 function fmt(iso) { return iso ? new Date(iso).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }) : '—'; }
 
 function InvoiceDetailModal({ invoice, onClose, onUpdatePayment }) {
   if (!invoice) return null;
+  const handlePDF = () => generateInvoicePDF({ ...invoice, _customer: {} });
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal" style={{ maxWidth: 580 }} onClick={e => e.stopPropagation()}>
@@ -49,6 +51,9 @@ function InvoiceDetailModal({ invoice, onClose, onUpdatePayment }) {
         </div>
         <div className="modal-footer">
           <button className="btn btn-outline" onClick={onClose}>Close</button>
+          <button className="btn btn-outline" onClick={handlePDF} style={{ borderColor:'var(--primary)', color:'var(--primary)' }}>
+            ⬇ Download PDF
+          </button>
           {invoice.paymentStatus !== 'paid' && (
             <button className="btn btn-success" onClick={() => { onUpdatePayment(invoice.id, 'paid'); onClose(); }}>
               Mark as Paid ✓

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { db } from '../db.js';
+import { generateInvoicePDF } from '../generateInvoicePDF.js';
 
 const PRODUCTS = ['Cup 100ml', 'Cup 200ml', 'Plate 6 inch', 'Plate 8 inch', 'Plate 10 inch'];
 const DEFAULT_RATES = { 'Cup 100ml': 1.5, 'Cup 200ml': 2.5, 'Plate 6 inch': 3.0, 'Plate 8 inch': 4.0, 'Plate 10 inch': 5.0 };
@@ -70,6 +71,11 @@ export default function CreateInvoice() {
   };
 
   if (success) {
+    const handlePDF = () => {
+      const customer = customers.find(c => c.id === success.customerId);
+      generateInvoicePDF({ ...success, _customer: customer || {} });
+    };
+
     return (
       <div style={{ maxWidth: 560 }}>
         <div className="card" style={{ textAlign:'center', padding:'40px 30px' }}>
@@ -81,8 +87,20 @@ export default function CreateInvoice() {
           <div className="alert alert-info" style={{ textAlign:'left', margin:'0 0 20px' }}>
             📦 Stock automatically deducted from Live Inventory for {success.items.length} product{success.items.length>1?'s':''}.
           </div>
+
+          {/* PDF Download */}
+          <div style={{ background:'#f8fafc', border:'1.5px dashed var(--border)', borderRadius:10, padding:'16px 20px', marginBottom:20 }}>
+            <div style={{ fontSize:13, fontWeight:600, marginBottom:8, color:'var(--text)' }}>📄 Download Invoice PDF</div>
+            <div style={{ fontSize:12, color:'var(--text-med)', marginBottom:12 }}>
+              Professional PDF with all details, line items, GST breakdown, and payment status.
+            </div>
+            <button className="btn btn-primary" style={{ width:'100%' }} onClick={handlePDF}>
+              ⬇ Download {success.invoiceNumber}.pdf
+            </button>
+          </div>
+
           <div style={{ display:'flex', gap:12, justifyContent:'center' }}>
-            <button className="btn btn-primary" onClick={() => navigate('/invoices')}>View All Invoices</button>
+            <button className="btn btn-outline" onClick={() => navigate('/invoices')}>View All Invoices</button>
             <button className="btn btn-outline" onClick={() => { setSuccess(null); setCustomerId(''); setItems([{ productType:'Cup 200ml', quantity:'', rate:2.5 }]); setErrors([]); }}>Create Another</button>
           </div>
         </div>
