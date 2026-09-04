@@ -401,23 +401,34 @@ export default function WorkerStats() {
 
       {/* ── 7-DAY TREND ── */}
       {tab === 'trend' && (
-        <div className="grid-2">
+        <div style={{ display:'grid', gridTemplateColumns: filteredWorkers.length === 1 ? '1fr' : 'repeat(auto-fill, minmax(420px, 1fr))', gap:20 }}>
           {filteredWorkers.map(w => {
             const workerEntries = entries.filter(e => e.workerId === w.id);
+            const isSingle = filteredWorkers.length === 1;
             return (
               <div key={w.id} className="card">
                 <div className="card-header">
                   <span className="card-title">📈 {w.name} — Last 7 Days</span>
-                  <span className="badge badge-blue">{w.machineId}</span>
+                  <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+                    <span className="badge badge-blue">{w.machineId}</span>
+                    <span className="badge badge-gray">{w.uniqueDays} days worked</span>
+                  </div>
                 </div>
                 <div className="card-body">
                   <TrendBar entries={workerEntries} />
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8, marginTop:16 }}>
-                    <StatPill label="Today"      value={w.todayQty  > 0 ? w.todayQty.toLocaleString()  : '—'} color="var(--primary)" />
-                    <StatPill label="This Week"  value={w.weekQty   > 0 ? w.weekQty.toLocaleString()   : '—'} color="var(--blue)" />
-                    <StatPill label="This Month" value={w.monthQty  > 0 ? w.monthQty.toLocaleString()  : '—'} color="var(--green)" />
-                    <StatPill label="Efficiency" value={w.efficiency > 0 ? `${w.efficiency} u/h` : '—'}       color="var(--orange)" />
+                  <div style={{ display:'grid', gridTemplateColumns: isSingle ? 'repeat(4,1fr)' : '1fr 1fr', gap:10, marginTop:20 }}>
+                    <StatPill label="Today"      value={w.todayQty  > 0 ? w.todayQty.toLocaleString()  : '—'} color="var(--brand)"  />
+                    <StatPill label="This Week"  value={w.weekQty   > 0 ? w.weekQty.toLocaleString()   : '—'} color="var(--blue)"   />
+                    <StatPill label="This Month" value={w.monthQty  > 0 ? w.monthQty.toLocaleString()  : '—'} color="var(--green)"  />
+                    <StatPill label="Efficiency" value={w.efficiency > 0 ? `${w.efficiency} u/h` : '—'}        color="var(--orange)" />
                   </div>
+                  {isSingle && (
+                    <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginTop:10 }}>
+                      <StatPill label="Total Hours"   value={fmtHours(w.totalHours)}   color="var(--purple)" />
+                      <StatPill label="Net Approved"  value={w.netApproved.toLocaleString()} color="var(--green)" />
+                      <StatPill label="Rejection %"   value={`${w.rejRate}%`}           color={w.rejRate < 5 ? 'var(--green)' : w.rejRate < 10 ? 'var(--orange)' : 'var(--red)'} />
+                    </div>
+                  )}
                 </div>
               </div>
             );

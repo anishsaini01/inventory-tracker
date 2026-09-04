@@ -2,7 +2,7 @@ import { calcHours } from './utils.js';
 
 const DB_KEY = 'manutrack_db';
 
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 function d(n) { return new Date(Date.now() - n * 86400000).toLocaleDateString('en-CA'); }
 
@@ -58,9 +58,9 @@ function makeSeed() {
       { id:'c4', name:'Verma Distributors', phone:'9765432109', email:'verma@dist.com',       address:'Hazratganj, Lucknow',     creditLimit:60000 },
     ],
     invoices: [
-      { id:'inv1', invoiceNumber:'MFG-2024-001', customerId:'c1', customerName:'Sharma Traders',    items:[{ productType:'Cup 200ml',    quantity:500,  rate:2.5, amount:1250 },{ productType:'Plate 6 inch', quantity:200, rate:3.0, amount:600  }], subtotal:1850, tax:333, total:2183, paymentStatus:'paid',    createdAt:new Date(Date.now()-3*86400000).toISOString(), createdBy:'Neha Verma' },
-      { id:'inv2', invoiceNumber:'MFG-2024-002', customerId:'c2', customerName:'Patel Enterprises', items:[{ productType:'Cup 100ml',    quantity:1000, rate:1.5, amount:1500 }],                                                                   subtotal:1500, tax:270, total:1770, paymentStatus:'unpaid',  createdAt:new Date(Date.now()-86400000).toISOString(),   createdBy:'Neha Verma' },
-      { id:'inv3', invoiceNumber:'MFG-2024-003', customerId:'c3', customerName:'Gupta & Sons',      items:[{ productType:'Plate 8 inch', quantity:300,  rate:4.0, amount:1200 },{ productType:'Cup 200ml',    quantity:200, rate:2.5, amount:500  }], subtotal:1700, tax:306, total:2006, paymentStatus:'partial', createdAt:new Date(Date.now()-43200000).toISOString(),   createdBy:'Neha Verma' },
+      { id:'inv1', invoiceNumber:'MFG-2024-001', customerId:'c1', customerName:'Sharma Traders',    items:[{ productType:'Cup 200ml',    quantity:500,  rate:2.5, amount:1250 },{ productType:'Plate 6 inch', quantity:200, rate:3.0, amount:600  }], subtotal:1850, tax:333, total:2183, paymentStatus:'paid',    amountReceived:2183, paymentHistory:[{ amount:2183, method:'Bank Transfer', note:'Full payment received', date:new Date(Date.now()-2*86400000).toISOString() }], createdAt:new Date(Date.now()-3*86400000).toISOString(), createdBy:'Neha Verma' },
+      { id:'inv2', invoiceNumber:'MFG-2024-002', customerId:'c2', customerName:'Patel Enterprises', items:[{ productType:'Cup 100ml',    quantity:1000, rate:1.5, amount:1500 }],                                                                   subtotal:1500, tax:270, total:1770, paymentStatus:'unpaid',  amountReceived:0,    paymentHistory:[], createdAt:new Date(Date.now()-86400000).toISOString(),   createdBy:'Neha Verma' },
+      { id:'inv3', invoiceNumber:'MFG-2024-003', customerId:'c3', customerName:'Gupta & Sons',      items:[{ productType:'Plate 8 inch', quantity:300,  rate:4.0, amount:1200 },{ productType:'Cup 200ml',    quantity:200, rate:2.5, amount:500  }], subtotal:1700, tax:306, total:2006, paymentStatus:'partial', amountReceived:1000, paymentHistory:[{ amount:1000, method:'Cash', note:'Advance payment', date:new Date(Date.now()-20000000).toISOString() }], createdAt:new Date(Date.now()-43200000).toISOString(),   createdBy:'Neha Verma' },
     ],
     invoiceCounter: 4,
     dbVersion: DB_VERSION,
@@ -145,5 +145,17 @@ export const db = {
     const idx = data.invoices.findIndex(i => i.id === id);
     if (idx !== -1) data.invoices[idx].paymentStatus = status;
     this._set(data);
+  },
+  recordPayment(id, { amount, method, note, date }) {
+    const data = this._get();
+    const idx  = data.invoices.findIndex(i => i.id === id);
+    if (idx === -1) return;
+    const inv = data.invoices[idx];
+    const newReceived = (inv.amountReceived || 0) + amount;
+    inv.amountReceived  = newReceived;
+    inv.paymentHistory  = [...(inv.paymentHistory || []), { amount, method, note, date }];
+    inv.paymentStatus   = newReceived >= inv.total ? 'paid' : 'partial';
+    this._set(data);
+    return data.invoices[idx];
   },
 };
