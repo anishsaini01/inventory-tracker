@@ -77,7 +77,7 @@ export default function CreateInvoice() {
     };
 
     return (
-      <div style={{ maxWidth: 560 }}>
+      <div>
         <div className="card" style={{ textAlign:'center', padding:'40px 30px' }}>
           <div style={{ fontSize:56, marginBottom:16 }}>🎉</div>
           <h2 style={{ color:'var(--green)', marginBottom:8 }}>Invoice Created!</h2>
@@ -109,7 +109,7 @@ export default function CreateInvoice() {
   }
 
   return (
-    <div style={{ maxWidth: 700 }}>
+    <>
       <div className="page-head">
         <div><h1>Create Invoice</h1><p>Stock will be auto-deducted from Live Inventory on creation</p></div>
         <button className="btn btn-outline" onClick={() => navigate('/invoices')}>← Back</button>
@@ -121,6 +121,8 @@ export default function CreateInvoice() {
         </div>
       )}
 
+      <div className="grid-2" style={{ alignItems:'start' }}>
+      <div>
       <div className="card mb-16">
         <div className="card-header"><span className="card-title">Customer Details</span></div>
         <div className="card-body">
@@ -190,32 +192,53 @@ export default function CreateInvoice() {
         </div>
       </div>
 
+      </div>{/* end left col */}
+
+      {/* ── RIGHT: Summary ── */}
+      <div>
       <div className="card mb-16">
         <div className="card-header"><span className="card-title">Invoice Summary</span></div>
         <div className="card-body">
-          <div style={{ display:'flex', flexDirection:'column', gap:10, maxWidth:320, marginLeft:'auto' }}>
+          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
             <div style={{ display:'flex', justifyContent:'space-between', fontSize:14 }}>
-              <span>Subtotal</span><span style={{ fontWeight:600 }}>₹{subtotal.toLocaleString()}</span>
+              <span style={{ color:'var(--text-2)' }}>Subtotal</span><span style={{ fontWeight:600 }}>₹{subtotal.toLocaleString()}</span>
             </div>
-            <div style={{ display:'flex', justifyContent:'space-between', fontSize:14, color:'var(--text-med)' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:14, color:'var(--text-3)' }}>
               <span>GST (18%)</span><span>₹{tax.toLocaleString()}</span>
             </div>
-            <div style={{ display:'flex', justifyContent:'space-between', fontSize:18, fontWeight:800, borderTop:'2px solid var(--border)', paddingTop:10 }}>
-              <span>Total</span><span style={{ color:'var(--primary)' }}>₹{total.toLocaleString()}</span>
+            <div style={{ display:'flex', justifyContent:'space-between', fontSize:20, fontWeight:800, borderTop:'2px solid var(--border)', paddingTop:12, marginTop:4 }}>
+              <span>Total</span><span style={{ color:'var(--brand)' }}>₹{total.toLocaleString()}</span>
             </div>
           </div>
           <div className="alert alert-info" style={{ marginTop:16 }}>
-            📦 On creating this invoice, stock will be automatically deducted from Live Inventory.
+            📦 Stock will be auto-deducted from Live Inventory on creation.
+          </div>
+          <div style={{ display:'flex', flexDirection:'column', gap:10, marginTop:8 }}>
+            <button className="btn btn-primary" onClick={handleSubmit} disabled={subtotal === 0} style={{ width:'100%', justifyContent:'center', padding:'11px' }}>
+              🧾 Create Invoice & Deduct Stock
+            </button>
+            <button className="btn btn-outline" onClick={() => navigate('/invoices')} style={{ width:'100%', justifyContent:'center' }}>Cancel</button>
           </div>
         </div>
       </div>
 
-      <div style={{ display:'flex', gap:12 }}>
-        <button className="btn btn-primary" onClick={handleSubmit} disabled={subtotal === 0}>
-          🧾 Create Invoice & Deduct Stock
-        </button>
-        <button className="btn btn-outline" onClick={() => navigate('/invoices')}>Cancel</button>
+      {/* Live stock panel */}
+      <div className="card">
+        <div className="card-header"><span className="card-title">📦 Available Stock</span></div>
+        <div className="card-body" style={{ padding:'12px 16px' }}>
+          {db.getInventory().map(item => (
+            <div key={item.productType} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', padding:'8px 0', borderBottom:'1px solid var(--border-light)' }}>
+              <span style={{ fontSize:13, color:'var(--text-2)' }}>{item.productType}</span>
+              <span style={{ fontWeight:700, fontSize:13, color: item.quantity < 500 ? 'var(--orange)' : 'var(--green)' }}>
+                {item.quantity.toLocaleString()} units
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+      </div>{/* end right col */}
+      </div>{/* end grid */}
+
+    </>
   );
 }
