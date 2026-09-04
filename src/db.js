@@ -2,10 +2,21 @@ import { calcHours } from './utils.js';
 
 const DB_KEY = 'manutrack_db';
 
+const DB_VERSION = 3;
+
 function d(n) { return new Date(Date.now() - n * 86400000).toLocaleDateString('en-CA'); }
 
+// Returns d(n) only if it's still in the current month, else falls back to d(1)
+function md(n) {
+  const target = new Date(Date.now() - n * 86400000);
+  const now    = new Date();
+  return (target.getMonth() === now.getMonth() && target.getFullYear() === now.getFullYear())
+    ? target.toLocaleDateString('en-CA')
+    : d(1);
+}
+
 function makeSeed() {
-  const today = d(0), y1 = d(1), y2 = d(2), y3 = d(3), y4 = d(4), y5 = d(5), y6 = d(6);
+  const today = d(0), y1 = d(1), y2 = md(2), y3 = md(3), y4 = md(4), y5 = md(5), y6 = md(6);
   return {
     users: [
       { id: 'w1', name: 'Ramesh Kumar',   role: 'worker',     username: 'ramesh',  password: 'pass123',  machineId: 'M01' },
@@ -52,14 +63,20 @@ function makeSeed() {
       { id:'inv3', invoiceNumber:'MFG-2024-003', customerId:'c3', customerName:'Gupta & Sons',      items:[{ productType:'Plate 8 inch', quantity:300,  rate:4.0, amount:1200 },{ productType:'Cup 200ml',    quantity:200, rate:2.5, amount:500  }], subtotal:1700, tax:306, total:2006, paymentStatus:'partial', createdAt:new Date(Date.now()-43200000).toISOString(),   createdBy:'Neha Verma' },
     ],
     invoiceCounter: 4,
+    dbVersion: DB_VERSION,
   };
 }
 
 export const db = {
   init() {
-    if (!localStorage.getItem(DB_KEY)) {
-      localStorage.setItem(DB_KEY, JSON.stringify(makeSeed()));
-    }
+    const raw = localStorage.getItem(DB_KEY);
+    if (!raw) { localStorage.setItem(DB_KEY, JSON.stringify(makeSeed())); return; }
+    try {
+      const data = JSON.parse(raw);
+      if ((data.dbVersion || 0) < DB_VERSION) {
+        localStorage.setItem(DB_KEY, JSON.stringify(makeSeed()));
+      }
+    } catch { localStorage.setItem(DB_KEY, JSON.stringify(makeSeed())); }
   },
   reset() { localStorage.setItem(DB_KEY, JSON.stringify(makeSeed())); },
   _get() { return JSON.parse(localStorage.getItem(DB_KEY)); },
