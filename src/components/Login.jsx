@@ -7,16 +7,23 @@ const QUICK = [
   { role: 'Supervisor', label: '👔 Supervisor', username: 'amit',   password: 'pass123',  color: '#3b82f6' },
   { role: 'Inventory',  label: '📦 Inventory',  username: 'rajesh', password: 'pass123',  color: '#8b5cf6' },
   { role: 'Sales',      label: '💼 Sales',       username: 'neha',   password: 'pass123',  color: '#f59e0b' },
-  { role: 'Admin',      label: '🔐 Admin',       username: 'admin',  password: 'admin123', color: '#1e3799' },
+  { role: 'Admin',      label: '🔐 Admin',       username: 'admin',  password: 'admin123', color: '#2563eb' },
+];
+
+const FEATURES = [
+  { icon: '⚙', title: 'Production Tracking', desc: 'Log machine output per shift with real-time visibility' },
+  { icon: '✅', title: 'Supervisor Approvals', desc: 'Two-level approval flow before stock hits inventory' },
+  { icon: '📦', title: 'Live Inventory', desc: 'Auto-updated stock levels on every approval and invoice' },
+  { icon: '🧾', title: 'Smart Invoicing', desc: 'Create invoices with auto stock deduction and PDF export' },
 ];
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError]   = useState('');
-  const [selRole, setSelRole] = useState('');
-  const { login } = useAuth();
-  const navigate  = useNavigate();
+  const [error, setError]       = useState('');
+  const [selRole, setSelRole]   = useState('');
+  const { login }  = useAuth();
+  const navigate   = useNavigate();
 
   const handleQuick = (q) => {
     setUsername(q.username);
@@ -29,59 +36,91 @@ export default function Login() {
     e.preventDefault();
     const r = login(username, password);
     if (r.success) navigate('/dashboard');
-    else setError('Invalid username or password. Try the quick login buttons below.');
+    else setError('Invalid credentials. Use the quick login buttons below.');
   };
 
   return (
     <div className="login-page">
-      <div className="login-card">
-        <div className="login-logo">
-          <div className="logo-icon">M</div>
-          <span className="logo-text">ManuTrack</span>
-        </div>
-        <h2>Welcome Back</h2>
-        <p>Sign in to continue to ManuTrack</p>
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Username</label>
-            <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Enter username" required />
+      {/* ── LEFT PANEL ── */}
+      <div className="login-left">
+        <div>
+          <div className="ll-logo">
+            <div className="ll-logo-icon">M</div>
+            <span className="ll-logo-name">ManuTrack</span>
           </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required />
+          <div className="ll-headline">
+            <h1>Factory floor to<br /><span>invoice</span>, automated.</h1>
+            <p>End-to-end manufacturing management — from machine production entry to live inventory and billing.</p>
           </div>
-          {error && <div className="error-msg">⚠ {error}</div>}
-          <button type="submit" className="btn-login">Sign In →</button>
-        </form>
-
-        <div className="quick-login-section">
-          <div className="quick-login-divider"><span>Quick Login by Role</span></div>
-          <div className="quick-login-buttons">
-            {QUICK.map(q => (
-              <button
-                key={q.role}
-                type="button"
-                className={`quick-login-btn ${selRole === q.role ? 'active' : ''}`}
-                style={{ '--btn-color': q.color }}
-                onClick={() => handleQuick(q)}
-              >
-                {q.label}
-              </button>
+          <div className="ll-features">
+            {FEATURES.map(f => (
+              <div key={f.title} className="ll-feature">
+                <div className="ll-feature-icon">{f.icon}</div>
+                <div className="ll-feature-text">
+                  <strong>{f.title}</strong>
+                  <span>{f.desc}</span>
+                </div>
+              </div>
             ))}
           </div>
-          {selRole && (
-            <p className="quick-login-hint">✓ {selRole} credentials loaded — click Sign In</p>
-          )}
         </div>
+        <div className="ll-footer">© 2024 ManuTrack · Manufacturing Management POC</div>
+      </div>
 
-        <div style={{ marginTop: 24, padding: '12px', background: '#f8fafc', borderRadius: 8, fontSize: 11, color: '#94a3b8' }}>
-          <strong style={{ color: '#475569' }}>Demo credentials:</strong>
-          {QUICK.map(q => (
-            <div key={q.role} style={{ marginTop: 3 }}>
-              <span style={{ color: q.color, fontWeight: 600 }}>{q.role}:</span> {q.username} / {q.password}
+      {/* ── RIGHT PANEL ── */}
+      <div className="login-right">
+        <div className="login-form-wrap">
+          <div className="welcome">
+            <h2>Welcome back</h2>
+            <p>Sign in to your ManuTrack workspace</p>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>Username</label>
+              <input
+                value={username} onChange={e => setUsername(e.target.value)}
+                placeholder="Enter your username" autoComplete="username" required
+              />
             </div>
-          ))}
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="Enter your password" autoComplete="current-password" required
+              />
+            </div>
+            {error && <div className="error-msg">⚠ {error}</div>}
+            <button type="submit" className="btn-login">Sign in →</button>
+          </form>
+
+          <div className="quick-login-section">
+            <div className="quick-login-divider"><span>Quick login by role</span></div>
+            <div className="quick-login-buttons">
+              {QUICK.map(q => (
+                <button
+                  key={q.role} type="button"
+                  className={`quick-login-btn ${selRole === q.role ? 'active' : ''}`}
+                  style={{ '--btn-color': q.color }}
+                  onClick={() => handleQuick(q)}
+                >
+                  {q.label}
+                </button>
+              ))}
+            </div>
+            {selRole && <p className="quick-login-hint">✓ {selRole} credentials loaded — click Sign in</p>}
+          </div>
+
+          <div className="cred-box">
+            <strong>Demo credentials</strong>
+            {QUICK.map(q => (
+              <div key={q.role} className="cred-row">
+                <div className="cred-dot" style={{ background: q.color }} />
+                <span className="cred-name">{q.role}</span>
+                <span className="cred-val">{q.username} / {q.password}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
